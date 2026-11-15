@@ -22,8 +22,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: WebView2 SDK (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: nuget install Microsoft.Web.WebView2 -OutputDirectory "$env:GITHUB_WORKSPACE/webview2pkg"
+
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        shell: bash
+        run: |
+          EXTRA=""
+          if [ "$RUNNER_OS" = "Windows" ]; then EXTRA="-DJUCE_WEBVIEW2_PACKAGE_LOCATION=$GITHUB_WORKSPACE/webview2pkg"; fi
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release $EXTRA
 
       - name: Build
         run: cmake --build build --config Release --parallel 4
